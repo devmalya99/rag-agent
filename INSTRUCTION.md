@@ -16,6 +16,9 @@ Build a RAG (Retrieval-Augmented Generation) Agent that can extract transcripts 
   - [x] Backend: Implement retrieval logic (query vector store)
   - [x] Backend: Generate answer using Gemini with retrieved context
   - [x] Frontend: Connect chat UI to backend `/chat` endpoint
+- [ ] **Phase 4: Deployment & Version Control**
+  - [ ] Connect to fresh GitHub repository
+  - [ ] Push initial code
 
 ## Planning
 1.  **Backend Chat Endpoint**: Implement a streaming endpoint that accepts messages, retrieves relevant chunks, and generates a response.

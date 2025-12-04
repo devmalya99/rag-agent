@@ -1,4 +1,5 @@
 # RAG Agent Project Documentation
+> **Status**: 🚧 In Development (Phase 4: Deployment)
 
 ## Overview
 This project is a **Retrieval-Augmented Generation (RAG) Agent** designed to process YouTube videos. It extracts transcripts, splits them into manageable chunks, generates vector embeddings using Google Gemini, and indexes them for semantic search. This lays the foundation for an AI assistant that can "chat" with video content.
