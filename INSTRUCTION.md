@@ -17,6 +17,7 @@ Build a RAG (Retrieval-Augmented Generation) Agent that can extract transcripts 
   - [x] Backend: Generate answer using Gemini with retrieved context
   - [x] Frontend: Connect chat UI to backend `/chat` endpoint
 - [ ] **Phase 4: Deployment & Version Control**
+  - [ ] Fix GitHub CLI authentication (Switch to `devmalya99`)
   - [ ] Connect to fresh GitHub repository
   - [ ] Push initial code
 
