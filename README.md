@@ -97,7 +97,9 @@ graph LR
 3.  Install dependencies:
     
     **Option A: Using requirements.txt (Recommended)**
+3.  Install dependencies:
     ```bash
+    cd backend
     pip3 install -r requirements.txt
     ```
 
