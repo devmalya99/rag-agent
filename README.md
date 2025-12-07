@@ -21,8 +21,8 @@ The system follows a modern client-server architecture with **Streaming Response
 graph LR
     User[User] -->|URL| Frontend[Next.js Frontend]
     User -->|Chat| Frontend
-    Frontend -->|POST /transcript (Stream)| Backend[FastAPI Backend]
-    Frontend -->|POST /chat (Stream)| Backend
+    Frontend -->|"POST /transcript (Stream)"| Backend[FastAPI Backend]
+    Frontend -->|"POST /chat (Stream)"| Backend
     Backend -->|Stream Events| Frontend
     Backend -->|Fetch| YouTube[YouTube API]
     Backend -->|Split| LangChain[LangChain Splitter]
