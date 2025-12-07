@@ -95,8 +95,15 @@ graph LR
     GOOGLE_API_KEY="your_api_key_here"
     ```
 3.  Install dependencies:
+    
+    **Option A: Using requirements.txt (Recommended)**
     ```bash
-    pip3 install fastapi uvicorn langchain langchain-community langchain-google-genai youtube-transcript-api python-dotenv
+    pip3 install -r requirements.txt
+    ```
+
+    **Option B: Manual Install**
+    ```bash
+    pip3 install fastapi uvicorn langchain langchain-community langchain-google-genai youtube-transcript-api python-dotenv requests yt-dlp
     ```
 4.  Run the server:
     ```bash
