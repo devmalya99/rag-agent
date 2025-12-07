@@ -32,6 +32,7 @@ app.add_middleware(
 # Global variable to hold the vector store in memory.
 # In a production app, this would be replaced by a persistent database/Vector DB instance (e.g., Pinecone, Chroma).
 GLOBAL_VECTOR_STORE = None
+GLOBAL_LOADED_URL = None # Cache key to prevent re-processing
 
 class TranscriptRequest(BaseModel):
     url: str
@@ -47,11 +48,25 @@ class ChatRequest(BaseModel):
 # -------------------------------------------------------------------------
 @app.post("/transcript")
 async def get_transcript(request: TranscriptRequest):
-    global GLOBAL_VECTOR_STORE
+    global GLOBAL_VECTOR_STORE, GLOBAL_LOADED_URL
     
     async def event_generator():
-        global GLOBAL_VECTOR_STORE
+        global GLOBAL_VECTOR_STORE, GLOBAL_LOADED_URL
         
+        # ---------------------------------------------------------------------
+        # Caching Layer
+        # Check if we already have this video loaded in memory.
+        # If yes, skip the expensive API calls (download, split, embed).
+        # ---------------------------------------------------------------------
+        if GLOBAL_VECTOR_STORE is not None and GLOBAL_LOADED_URL == request.url:
+             print(f"⚡ Cache Hit! Video already loaded: {request.url}")
+             yield json.dumps({"status": "processing_text", "message": "⚡ Found in cache! Skipping download..."}) + "\n"
+             await asyncio.sleep(0.5) # UX pacing
+             yield json.dumps({"status": "indexing", "message": "Using existing Vector Store..."}) + "\n"
+             await asyncio.sleep(0.5) 
+             yield json.dumps({"status": "complete", "message": "✅ Ready (restored from cache)!"}) + "\n"
+             return
+
         # Iterate over the generator from extract_transcript.py
         # Logic: We consume the generator's yields (status messages) and forward them to the client as events.
         #        When we receive the final 'InMemoryVectorStore' object, we update our global state.
@@ -63,8 +78,9 @@ async def get_transcript(request: TranscriptRequest):
                 # Valid JSON status message -> stream to client
                 yield item
             elif isinstance(item, InMemoryVectorStore):
-                # The vector store object -> update global state
+                # The vector store object -> update global state caused by FRESH processing
                 GLOBAL_VECTOR_STORE = item
+                GLOBAL_LOADED_URL = request.url
                 print("✅ Vector Store successfully stored in memory.")
             
             # Yield control to the event loop briefly to ensure efficient stream flushing

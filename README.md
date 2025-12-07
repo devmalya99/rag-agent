@@ -11,6 +11,7 @@
 -   **RAG Pipeline**: orchestrated a vector search engine using **LangChain** and **Google Gemini 2.0 Flash**. Designed a recursive character splitting strategy (1000/200 overlap) to maximize context retention during semantic retrieval.
 -   **Frontend**: Developed a robust **Next.js 16** interface with a custom React hook system to consume NDJSON streams without relying on external SDK overhead. Optimized the UI for instant feedback, successfully reducing perceived latency by removing blocking request patterns.
 -   **Optimization**: Reduced operational costs by implementing model-tiering (fallback to Flash 1.5/2.0) and enforcing input constraints (5-minute video duration checks) via lightweight metadata pre-fetching. Added robust fallback mechanisms to ensure transcription processing continues even if metadata checks fail (resilience over strictness).
+-   **Performance**: Implemented **Smart In-Memory Caching** to instantly restore previously processed videos upon page refresh, eliminating redundant API calls and processing time.
 
 ## Architecture
 
