@@ -15,67 +15,71 @@ def extract_transcript_generator(video_url):
     print(f"Attempting to fetch transcript for: {video_url}")
     
     # -------------------------------------------------------------------------
-    # Validation & Extraction Layer
-    # Logic: 
-    #   1. Fetch transcript with `add_video_info=True` to get metadata (duration).
-    #   2. Check Duration (Limit: 5 min).
-    #   3. If valid, return documents.
+    # STICT Duration Check (Limit: 5 min)
+    # Tool: yt-dlp (Robust & Reliable)
     # -------------------------------------------------------------------------
-    documents = None
     try:
-        # Priority 1: English with Video Info (for duration check)
-        loader = YoutubeLoader.from_youtube_url(
-            video_url,
-            add_video_info=True, # Fetch metadata (length, title, etc.)
-            language=["en", "en-US"],
-            translation="en"
-        )
-        documents = loader.load()
+        import yt_dlp
         
-        # Duration Check
-        if documents and len(documents) > 0:
-            # YoutubeLoader puts metadata in the first document
-            duration = documents[0].metadata.get("length") # Duration in seconds
+        ydl_opts = {
+            'quiet': True,
+            'no_warnings': True,
+            'skip_download': True, # We only want metadata
+        }
+        
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            print("⏳ Validating video duration...")
+            info = ydl.extract_info(video_url, download=False)
+            duration = info.get('duration', 0)
             
-            if duration and duration > 300: # 300 seconds = 5 minutes
+            if duration > 300: # 300 seconds = 5 minutes
                  yield json.dumps({
                     "status": "error", 
                     "message": f"❌ Video is too long ({int(duration/60)}m {int(duration%60)}s). Limit is 5 minutes."
                 }) + "\n"
                  return
             
-            print(f"✅ Video duration check passed: {duration}s")
-
+            print(f"✅ Duration check passed: {duration}s")
+            
     except Exception as e:
-        print(f"⚠️ Metadata fetch failed (likely pytube issue): {e}")
-        yield json.dumps({"status": "retry_transcript", "message": "Metadata fetch failed. Skipping duration check..."}) + "\n"
+        print(f"⚠️ Duration check failed: {e}")
+        # STRICT MODE: If we can't verify duration, we REJECT.
+        yield json.dumps({
+            "status": "error", 
+            "message": f"❌ Could not verify video duration. Processing stopped. Error: {str(e)}"
+        }) + "\n"
+        return
+
+    # -------------------------------------------------------------------------
+    # Transcript Extraction Layer
+    # Logic: 
+    #   1. Fetch transcript (Metadata check already done above).
+    # -------------------------------------------------------------------------
+    documents = None
+    try:
+        # Priority: English
+        loader = YoutubeLoader.from_youtube_url(
+            video_url,
+            add_video_info=False, # We use yt-dlp for metadata now
+            language=["en", "en-US"],
+            translation="en"
+        )
+        documents = loader.load()
+        
+    except Exception as e:
+        print(f"⚠️ English transcript failed: {e}")
+        yield json.dumps({"status": "retry_transcript", "message": "English transcript not found. Trying auto-generated..."}) + "\n"
         
         try:
-            # Fallback 1: English, NO metadata (basic transcript only)
             loader = YoutubeLoader.from_youtube_url(
                 video_url,
-                add_video_info=False, # Disable problematic metadata fetch
-                language=["en", "en-US"],
-                translation="en"
+                add_video_info=False,
+                language=["en", "en-US"]
             )
             documents = loader.load()
-            print("✅ Extracted English transcript (without metadata).")
-
         except Exception as e2:
-             # Fallback 2: Any language, NO metadata
-            print(f"⚠️ English fallback failed: {e2}")
-            yield json.dumps({"status": "retry_transcript", "message": "English transcript not found. Trying auto-generated..."}) + "\n"
-            try:
-                loader = YoutubeLoader.from_youtube_url(
-                    video_url,
-                    add_video_info=False,
-                    language=["en", "en-US"]
-                )
-                documents = loader.load()
-                print("✅ Extracted fallback transcript.")
-            except Exception as e3:
-                 yield json.dumps({"status": "error", "message": f"Failed to fetch transcript: {str(e3)}"}) + "\n"
-                 return
+            yield json.dumps({"status": "error", "message": f"Failed to fetch transcript: {str(e2)}"}) + "\n"
+            return
 
     if not documents:
         yield json.dumps({"status": "error", "message": "No transcript found."}) + "\n"

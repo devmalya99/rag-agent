@@ -223,7 +223,7 @@ export default function Home() {
                 <div className="space-y-6">
                     <div>
                         <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500 mb-2">
-                            RAG Agent
+                            Single Twin Video RAG Agent
                         </h1>
                         <p className="text-gray-400">
                             Ingest a YouTube video to chat with it.
